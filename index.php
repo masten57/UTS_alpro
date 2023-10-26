@@ -1,36 +1,34 @@
 <?php
 
-function csvToJson($csvUrl) {
+function csvToJson($csvFile) {
     $csvData = [];
-    
-    if (($handle = fopen($csvUrl, 'r')) !== false) {
+
+    if (($handle = fopen($csvFile, 'r')) !== false) {
         while (($row = fgetcsv($handle)) !== false) {
             $csvData[] = $row;
         }
         fclose($handle);
+
+        $headers = array_shift($csvData);
+
+        $jsonArray = [];
+
+        foreach ($csvData as $row) {
+            $jsonArrayItem = [];
+            for ($i = 0; $i < count($headers); $i++) {
+                $jsonArrayItem[$headers[$i]] = $row[$i];
+            }
+            $jsonArray[] = $jsonArrayItem;
+        }    
+
+        return json_encode($jsonArray);
+    } else {
+        return json_encode(['error' => 'Failed to open CSV file']);
     }
-
-    // Assuming the first row of the CSV contains the column headers
-    $headers = array_shift($csvData);
-
-    $jsonArray = [];
-
-    foreach ($csvData as $row) {
-        $jsonArrayItem = array();
-        for ($i = 0; $i < count($headers); $i++) {
-            $jsonArrayItem[$headers[$i]] = $row[$i];
-        }
-        $jsonArray[] = $jsonArrayItem;
-    }    
-
-    return json_encode($jsonArray);
 }
 
-$csvUrl = 'https://testingalpro.alwaysdata.net/api/coffee.csv';
-$jsonData = csvToJson($csvUrl);
-
-// Set the content type to JSON
-header('Content-Type: application/json');
+$csvFile = 'datapribadi.csv';
+$jsonData = csvToJson($csvFile);
 
 // Output the JSON data
 echo $jsonData;
